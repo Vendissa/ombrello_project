@@ -2,8 +2,8 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routes.admin.umbrellas import router as admin_umbrellas_router
 
-# import your auth router (see step 2)
 from controllers.auth import router as auth_router
 
 app = FastAPI(
@@ -12,10 +12,10 @@ app = FastAPI(
     description="Backend for Ombrello umbrella-rental app",
 )
 
-# (Optional) CORS setup if your frontend runs on a different origin
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],            # restrict in production
+    allow_origins=["*"],            
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,3 +27,5 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 @app.get("/health", tags=["health"])
 async def health_check():
     return {"status": "ok"}
+
+app.include_router(admin_umbrellas_router, prefix="/admin/umbrellas", tags=["admin: umbrellas"])
