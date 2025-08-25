@@ -5,8 +5,8 @@ class Settings(BaseSettings):
 
     mongodb_uri: str
     secret_key: str
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 15
-    refresh_token_expire_days: int = 7
+    algorithm: str
+    access_token_expire_minutes: int
+    refresh_token_expire_days: int
 
 settings = Settings()

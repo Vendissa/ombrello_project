@@ -30,3 +30,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
             detail="Could not validate credentials",
         )
     return {"id": payload["id"], "role": payload["role"]}
+
+async def get_current_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    role = current_user.get("role")
+    if role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
+    return current_user
