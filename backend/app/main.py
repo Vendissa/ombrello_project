@@ -1,9 +1,8 @@
-# backend/main.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.admin.umbrellas import router as admin_umbrellas_router
-
+from app.routes.admin.auth_admin import router as auth_admin_router
+from controllers.admin.admin_vendors import router as admin_vendors_controller_router
 from controllers.auth import router as auth_router
 
 app = FastAPI(
@@ -15,7 +14,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],            
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,3 +28,5 @@ async def health_check():
     return {"status": "ok"}
 
 app.include_router(admin_umbrellas_router, prefix="/admin/umbrellas", tags=["admin: umbrellas"])
+app.include_router(auth_admin_router, tags=["auth"])
+app.include_router(admin_vendors_controller_router, tags=["admin: vendors"])

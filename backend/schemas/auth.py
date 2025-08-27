@@ -1,5 +1,3 @@
-# backend/schemas/auth.py
-
 from pydantic import BaseModel, EmailStr, Field
 from typing import Literal, Union
 

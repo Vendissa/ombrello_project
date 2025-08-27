@@ -13,7 +13,14 @@ from utils.security import (
     create_refresh_token,
     decode_token,
 )
-from crud.user import create_user, get_user_by_email, create_vendor
+
+
+from crud.user import (
+    create_user,
+    create_vendor,
+    get_user_by_email,
+    get_vendor_by_email,
+)
 
 router = APIRouter()
 
@@ -26,26 +33,28 @@ async def signup(
     if data.password != data.confirm_password:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Passwords do not match")
 
-    existing = await get_user_by_email(db, data.email, data.role)
-    if existing:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email already registered")
-
-    # Hash & insert
-    user_dict = data.dict(exclude={"confirm_password"})
-    user_dict["hashed_password"] = get_password_hash(data.password)
-    user_dict.pop("password")
-    uid = await create_user(db, user_dict)
+    # Role-specific existence check
     if data.role == "vendor":
-        uid = await create_vendor(db, user_dict)
+        if await get_vendor_by_email(db, data.email):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email already registered")
     else:
-        uid = await create_user(db, user_dict)
+        if await get_user_by_email(db, data.email):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email already registered")
 
-    # Issue tokens
+    # Prepare document (hash once, insert once)
+    doc = data.model_dump(exclude={"confirm_password"})
+    doc["hashed_password"] = get_password_hash(data.password)
+    doc.pop("password")
+    doc["role"] = data.role
+
+    if data.role == "vendor":
+        uid = await create_vendor(db, doc)
+    else:
+        uid = await create_user(db, doc)
+
     token_data = {"id": uid, "role": data.role}
     access_token = create_access_token(token_data, expires_delta=timedelta(minutes=15))
     refresh_token = create_refresh_token(token_data, expires_delta=timedelta(days=7))
-
-    # Set refresh token in HttpOnly cookie
     response.set_cookie("refresh_token", refresh_token, httponly=True, samesite="lax")
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -55,14 +64,18 @@ async def login(
     response: Response,
     db: AsyncIOMotorDatabase = Depends(get_db),
 ):
-    user = await get_user_by_email(db, creds.email, creds.role)
+    # Look up from correct collection
+    if creds.role == "vendor":
+        user = await get_vendor_by_email(db, creds.email)
+    else:
+        user = await get_user_by_email(db, creds.email)
+
     if not user or not verify_password(creds.password, user["hashed_password"]):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
 
     token_data = {"id": str(user["_id"]), "role": creds.role}
     access_token = create_access_token(token_data, expires_delta=timedelta(minutes=15))
     refresh_token = create_refresh_token(token_data, expires_delta=timedelta(days=7))
-
     response.set_cookie("refresh_token", refresh_token, httponly=True, samesite="lax")
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -83,6 +96,5 @@ async def refresh_token(
     token_data = {"id": payload["id"], "role": payload["role"]}
     new_access = create_access_token(token_data, expires_delta=timedelta(minutes=15))
     new_refresh = create_refresh_token(token_data, expires_delta=timedelta(days=7))
-
     response.set_cookie("refresh_token", new_refresh, httponly=True, samesite="lax")
     return {"access_token": new_access, "token_type": "bearer"}
