@@ -10,7 +10,6 @@ type SummaryResponse = {
   active_rentals: number;
   umbrellas_available: number;
   revenue: number; 
-  refunds: number;
 };
 
 // ----- Helpers -----
@@ -74,20 +73,20 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchSummary = useCallback(async () => {
-    setLoading(true);
-    const params: Record<string, string> = { date_from: from, date_to: to };
-    const res = await api.get("/admin/metrics/summary", { params });
-    setSummary(res.data as SummaryResponse);
-    setLoading(false);
-  }, [from, to]);
+  // const fetchSummary = useCallback(async () => {
+  //   setLoading(true);
+  //   const params: Record<string, string> = { date_from: from, date_to: to };
+  //   const res = await api.get("/admin/metrics/summary", { params });
+  //   setSummary(res.data as SummaryResponse);
+  //   setLoading(false);
+  // }, [from, to]);
 
-  useEffect(() => {
-    fetchSummary();
-  }, [fetchSummary]);
+  // useEffect(() => {
+  //   fetchSummary();
+  // }, [fetchSummary]);
 
   const revenueNoRefunds =
-    summary ? Math.max(0, (summary.revenue || 0) - (summary.refunds || 0)) : 0;
+    summary ? Math.max(0, (summary.revenue || 0) ) : 0;
 
   return (
     <Stack spacing={3}>
@@ -132,7 +131,7 @@ export default function DashboardPage() {
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <KpiCard
-            title="Revenue (no refunds)"
+            title="Revenue"
             value={fmtCurrency(revenueNoRefunds)}
             loading={loading}
             onClick={() => router.push("/reports?type=earnings")}

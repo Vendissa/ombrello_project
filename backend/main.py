@@ -2,7 +2,6 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes.admin.umbrellas import router as admin_umbrellas_router
 
 from controllers.auth import router as auth_router
 
@@ -28,4 +27,4 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 async def health_check():
     return {"status": "ok"}
 
-app.include_router(admin_umbrellas_router, prefix="/admin/umbrellas", tags=["admin: umbrellas"])
+

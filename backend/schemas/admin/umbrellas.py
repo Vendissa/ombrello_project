@@ -1,31 +1,36 @@
-# schemas/admin/umbrellas.py
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, Literal
+from datetime import datetime
 
-class UmbrellaCreateRequest(BaseModel):
+UmbrellaStatus = Literal["available", "rented", "maintenance", "lost", "retired"]
+UmbrellaCondition = Literal["good", "worn", "needs_repair", "broken"]
+
+class UmbrellaBase(BaseModel):
+    # code is optional on input (it will be auto-generated if omitted)
+    code: Optional[str] = Field(default=None, min_length=3, max_length=64)
+    vendor_id: str                                            # REQUIRED (must be a vendor)
+    shop_name: Optional[str] = None                              # will be forced to None on create/bulk
+    status: UmbrellaStatus = "available"
+    condition: UmbrellaCondition = "good"
+    rented_date: Optional[datetime] = None                    # null unless status='rented'
+
+class CreateUmbrella(UmbrellaBase):
+    pass
+
+class UpdateUmbrella(BaseModel):
     vendor_id: Optional[str] = None
-    city: Optional[str] = None
-    status: Optional[str] = Field(default="available", pattern="^(available|in_use|broken|lost)$")
-    umbrella_code: Optional[str] = None  # optional override
+    shop_name: Optional[str] = None
+    status: Optional[UmbrellaStatus] = None
+    condition: Optional[UmbrellaCondition] = None
+    rented_date: Optional[datetime] = None
 
-class UmbrellaResponse(BaseModel):
+class UmbrellaOut(UmbrellaBase):
     id: str
-    umbrella_code: str
-    qr_code: str
-    qr_payload: str
-    status: str
-    vendor_id: Optional[str] = None
-    city: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    qr_value: str
 
-class UmbrellaListResponse(BaseModel):
-    items: List[UmbrellaResponse]
-    total: int
-    page: int
-    page_size: int
-
-class UmbrellaBulkExportRequest(BaseModel):
-    umbrella_ids: Optional[List[str]] = None
-    vendor_id: Optional[str] = None
-    city: Optional[str] = None
-    count: Optional[int] = None
-    format: str = Field("pdf", pattern="^(pdf|zip)$")
+class BulkAddUmbrellas(BaseModel):
+    vendor_id: str
+    shop_name: Optional[str] = None
+    count: int = Field(..., ge=1, le=1000)

@@ -91,7 +91,7 @@ async def export_vendors(db: AsyncIOMotorDatabase = Depends(get_db)):
     cursor = db.vendors.find({})
     buffer = io.StringIO()
     writer = csv.writer(buffer)
-    writer.writerow(["Shop", "Owner", "Email", "Telephone", "Business Reg. No.", "Status", "Created At"])
+    writer.writerow(["Shop", "Owner", "Email", "Telephone", "Business Reg. No.", "Status"])
     async for v in cursor:
         writer.writerow([
             v.get("shop_name", ""),
@@ -100,7 +100,6 @@ async def export_vendors(db: AsyncIOMotorDatabase = Depends(get_db)):
             v.get("telephone", ""),
             v.get("business_reg_no", ""),
             v.get("status", ""),
-            v.get("created_at", ""),
         ])
     buffer.seek(0)
     return StreamingResponse(

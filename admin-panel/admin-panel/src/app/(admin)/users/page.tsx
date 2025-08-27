@@ -81,11 +81,6 @@ export default function UsersPage() {
     fetchData();
   };
 
-  const resetPassword = async (u: User) => {
-    await api.post(`/admin/users/${u.id}/reset-password`);
-    setAnchorEl(null);
-  };
-
   return (
     <Stack spacing={2}>
       <Card>
@@ -123,7 +118,6 @@ export default function UsersPage() {
               <TableCell>Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Telephone</TableCell>
-              <TableCell>City</TableCell>
               <TableCell>Status</TableCell>
               <TableCell align="right">Actions</TableCell>
             </TableRow>
@@ -161,9 +155,6 @@ export default function UsersPage() {
       <Menu anchorEl={anchorEl} open={menuOpen} onClose={() => setAnchorEl(null)}>
         <MenuItem onClick={() => { if (menuRow) toggleStatus(menuRow); }}>
           {menuRow?.status === "active" ? "Suspend" : "Activate"}
-        </MenuItem>
-        <MenuItem onClick={() => { if (menuRow) resetPassword(menuRow); }}>
-          Reset password
         </MenuItem>
       </Menu>
     </Stack>

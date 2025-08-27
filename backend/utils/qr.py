@@ -1,22 +1,46 @@
-# utils/qr.py
 import io
-import segno
+import qrcode
+from PIL import Image, ImageDraw, ImageFont
 
-def build_qr_svg_from_payload(payload: str, mm: float = 21.0, margin_mm: float = 2.0, ecc: str = "Q") -> bytes:
-    """
-    Returns SVG bytes for the given payload with physical sizing for print.
-    """
-    qrcode = segno.make(payload, error=ecc)
-    buf = io.BytesIO()
-    # scale via "mm" argument for physical size; preserve quiet zone via "border"
-    qrcode.save(buf, kind="svg", xmmsize=mm, border=margin_mm)  # segno treats border in mm when using xmmsize
-    return buf.getvalue()
+def generate_qr_png(
+    data: str,
+    *,
+    box_size: int = 10,
+    border: int = 2,
+    label_text: str | None = None,
+) -> bytes:
+    """Return PNG bytes for a QR code; optionally add a centered text label below."""
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=box_size,
+        border=border,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
 
-def build_qr_png_from_payload(payload: str, mm: float = 21.0, margin_mm: float = 2.0, dpi: int = 600, ecc: str = "Q") -> bytes:
-    """
-    Returns PNG bytes sized for print. mm + dpi gives pixel dimensions.
-    """
-    qrcode = segno.make(payload, error=ecc)
+    if label_text:
+        w, h = img.size
+        try:
+            font = ImageFont.truetype("arial.ttf", 14)
+        except Exception:
+            font = ImageFont.load_default()
+
+        # measure text
+        tmp_draw = ImageDraw.Draw(img)
+        bbox = tmp_draw.textbbox((0, 0), label_text, font=font)
+        tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+        pad = 6
+
+        # new canvas with label area
+        canvas = Image.new("RGB", (w, h + th + pad * 2), "white")
+        canvas.paste(img, (0, 0))
+
+        draw = ImageDraw.Draw(canvas)
+        draw.text(((w - tw) // 2, h + pad), label_text, fill="black", font=font)
+        img = canvas
+
     buf = io.BytesIO()
-    qrcode.save(buf, kind="png", scale=None, border=0, dpi=dpi, xmmsize=mm, quiet_zone=margin_mm)
+    img.save(buf, format="PNG")
     return buf.getvalue()

@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes.admin.umbrellas import router as admin_umbrellas_router
 from app.routes.admin.auth_admin import router as auth_admin_router
 from controllers.admin.admin_vendors import router as admin_vendors_controller_router
 from controllers.auth import router as auth_router
+from controllers.admin.admin_users import router as admin_users_router
+from controllers.admin.admin_umbrellas import router as admin_umbrellas_controller_router
 
 app = FastAPI(
     title="Ombrello API",
@@ -27,6 +28,8 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 async def health_check():
     return {"status": "ok"}
 
-app.include_router(admin_umbrellas_router, prefix="/admin/umbrellas", tags=["admin: umbrellas"])
+
 app.include_router(auth_admin_router, tags=["auth"])
 app.include_router(admin_vendors_controller_router, tags=["admin: vendors"])
+app.include_router(admin_users_router, tags=["admin: users"])
+app.include_router(admin_umbrellas_controller_router, tags=["admin: umbrellas"])
