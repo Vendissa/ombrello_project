@@ -5,11 +5,12 @@ from controllers.admin.admin_vendors import router as admin_vendors_controller_r
 from controllers.auth import router as auth_router
 from controllers.admin.admin_users import router as admin_users_router
 from controllers.admin.admin_umbrellas import router as admin_umbrellas_controller_router
+from controllers.admin.admin_metrics import router as admin_metrics_router
 
 app = FastAPI(
     title="Ombrello API",
     version="1.0.0",
-    description="Backend for Ombrello umbrella-rental app",
+    description="Backend for Ombrello umbrella-rent",
 )
 
 
@@ -33,3 +34,4 @@ app.include_router(auth_admin_router, tags=["auth"])
 app.include_router(admin_vendors_controller_router, tags=["admin: vendors"])
 app.include_router(admin_users_router, tags=["admin: users"])
 app.include_router(admin_umbrellas_controller_router, tags=["admin: umbrellas"])
+app.include_router(admin_metrics_router, tags=["admin: metrics"])

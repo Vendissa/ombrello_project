@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional, Tuple, List
 
 from utils.sequences import next_seq_block, format_umbrella_code
-from utils.vendors import get_vendor_oid_or_raise
+from utils.vendors import get_vendor_doc_or_raise
 
 COLLECTION = "umbrellas"
 
@@ -32,7 +32,7 @@ async def create(db: AsyncIOMotorDatabase, payload: Dict[str, Any]) -> Dict[str,
     # vendor required + exists (active)
     if not payload.get("vendor_id"):
         raise ValueError("vendor_id is required")
-    vendor_oid = await get_vendor_oid_or_raise(db, payload["vendor_id"], require_active=True)
+    vendor_doc = await get_vendor_doc_or_raise(db, payload["vendor_id"], require_active=True)
 
     # code auto-gen if missing
     code = (payload.get("code") or "").strip()
@@ -48,7 +48,7 @@ async def create(db: AsyncIOMotorDatabase, payload: Dict[str, Any]) -> Dict[str,
     to_insert = {
         **payload,
         "code": code,
-        "vendor_id": vendor_oid,
+        "vendor_id": vendor_doc["_id"],
         "status": payload.get("status", "available"),
         "condition": payload.get("condition", "good"),
         "rented_date": rented_date,
@@ -68,7 +68,7 @@ async def bulk_create_for_shop(
     shop_name: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
     # validate vendor
-    vendor_oid = await get_vendor_oid_or_raise(db, vendor_id, require_active=True)
+    vendor_doc = await get_vendor_doc_or_raise(db, vendor_id, require_active=True)
 
     now = datetime.utcnow()
     start, end = await next_seq_block(db, "umbrellas", count)
@@ -76,7 +76,7 @@ async def bulk_create_for_shop(
 
     docs = [{
         "code": code,
-        "vendor_id": vendor_oid,
+        "vendor_id": vendor_doc["_id"],
         "shop_name": shop_name,
         "status": "available",
         "condition": "good",
@@ -135,7 +135,7 @@ async def update(db: AsyncIOMotorDatabase, uid: str, payload: Dict[str, Any]) ->
     if "vendor_id" in payload:
         if not payload["vendor_id"]:
             raise ValueError("vendor_id cannot be empty")
-        payload["vendor_id"] = await get_vendor_oid_or_raise(db, payload["vendor_id"], require_active=True)
+        payload["vendor_id"] = await get_vendor_doc_or_raise(db, payload["vendor_id"], require_active=True)
 
     if payload.get("status") and payload["status"] != "rented":
         payload["rented_date"] = None

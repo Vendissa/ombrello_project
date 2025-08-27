@@ -8,7 +8,7 @@ from controllers.auth import router as auth_router
 app = FastAPI(
     title="Ombrello API",
     version="1.0.0",
-    description="Backend for Ombrello umbrella-rental app",
+    description="Backend rella-rental app",
 )
 
 

@@ -15,6 +15,8 @@ import TablePagination from "@mui/material/TablePagination";
 import SearchIcon from "@mui/icons-material/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import api from "@/app/lib/api";
+import { downloadBlob } from "@/app/lib/api";
+
 
 type UmbrellaStatus = "available" | "rented" | "maintenance" | "lost" | "retired";
 type UmbrellaCondition = "good" | "worn" | "needs_repair" | "broken";
@@ -288,6 +290,31 @@ export default function UmbrellasPage() {
             />
 
             <Button variant="outlined" onClick={onSearchApply}>Apply</Button>
+            <Button
+  variant="outlined"
+  disabled={!vendorFilterOpt}
+  onClick={() => {
+    if (!vendorFilterOpt) return;
+    const id = vendorFilterOpt.id;
+    const fname = `umbrellas-${vendorFilterOpt.label}-qr.zip`;
+    downloadBlob(`/admin/umbrellas/vendor/${id}/qr.zip?data=code&include_text=1`, fname);
+  }}
+>
+  Download QR (ZIP)
+</Button>
+
+<Button
+  variant="outlined"
+  disabled={!vendorFilterOpt}
+  onClick={() => {
+    if (!vendorFilterOpt) return;
+    const id = vendorFilterOpt.id;
+    const fname = `umbrellas-${vendorFilterOpt.label}-qr.pdf`;
+    downloadBlob(`/admin/umbrellas/vendor/${id}/qr.pdf?data=code&show_text=1`, fname);
+  }}
+>
+  Download QR (PDF)
+</Button>
           </Stack>
         </CardContent>
       </Card>

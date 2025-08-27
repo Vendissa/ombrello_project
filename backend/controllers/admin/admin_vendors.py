@@ -107,3 +107,7 @@ async def export_vendors(db: AsyncIOMotorDatabase = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=vendors.csv"}
     )
+
+@router.get("/ping")
+async def vendors_ping():
+    return {"ok": True}
