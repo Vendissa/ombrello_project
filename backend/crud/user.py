@@ -13,13 +13,10 @@ async def create_vendor(db: AsyncIOMotorDatabase, vendor_data: dict) -> str:
 # --- explicit helpers ---
 
 async def get_user_by_email(db: AsyncIOMotorDatabase, email: str) -> Optional[dict]:
-    """Fetch from users collection (any role in users, e.g. user/admin)."""
     return await db.users.find_one({"email": email})
 
 async def get_vendor_by_email(db: AsyncIOMotorDatabase, email: str) -> Optional[dict]:
-    """Fetch from vendors collection."""
     return await db.vendors.find_one({"email": email})
 
 async def get_admin_by_email(db: AsyncIOMotorDatabase, email: str) -> Optional[dict]:
-    """Fetch admin from users collection with role=admin."""
     return await db.users.find_one({"email": email, "role": "admin"})

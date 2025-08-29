@@ -1,4 +1,4 @@
-// app/(tabs)/_layout.tsx
+
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,8 +15,8 @@ export default function TabsLayout() {
           if (route.name === 'dashboard') name = 'grid';
           if (route.name === 'earnings') name = 'cash';
           if (route.name === 'scan') name = 'barcode';
-          if (route.name === 'reports') name = 'alert-circle';
           if (route.name === 'profile') name = 'person';
+          if (route.name === 'report') name = 'document-text';
           return <Ionicons name={name} size={size} color={color} />;
         },
       })}

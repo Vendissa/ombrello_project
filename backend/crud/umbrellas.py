@@ -1,8 +1,11 @@
 # crud/umbrellas.py
-from typing import List, Tuple, Optional
+from typing import Any, List, Tuple, Optional, Dict
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from datetime import datetime, timezone
+from pymongo import ReturnDocument
 
 def _coll(db):
-    return db.umbrellas  # MongoDB collection
+    return db.umbrellas
 
 async def insert_umbrella(db, doc: dict) -> dict:
     res = await _coll(db).insert_one({
@@ -11,10 +14,10 @@ async def insert_umbrella(db, doc: dict) -> dict:
     })
     return await _coll(db).find_one({"_id": res.inserted_id})
 
-async def get_umbrella_by_id(db, umbrella_id: str) -> Optional[dict]:
+async def get_umbrella_by_id(db, code: str) -> Optional[dict]:
     from bson import ObjectId
     try:
-        oid = ObjectId(umbrella_id)
+        oid = ObjectId(code)
     except Exception:
         return None
     return await _coll(db).find_one({"_id": oid})
@@ -45,3 +48,24 @@ async def query_umbrellas(
     cursor = _coll(db).find(filters).sort(sort_list).skip((page - 1) * page_size).limit(page_size)
     items = await cursor.to_list(length=page_size)
     return items, total
+
+async def set_umbrella_broken(
+    db: AsyncIOMotorDatabase,
+    code: str,
+    *,
+    set_status_maintenance: bool = True,
+) -> Optional[Dict[str, Any]]:
+    update = {
+        "$set": {
+            "condition": "bad",
+            "updated_at": datetime.now(timezone.utc),
+        }
+    }
+    if set_status_maintenance:
+        update["$set"]["status"] = "maintenance"  # blocks rentals
+
+    return await db.umbrellas.find_one_and_update(
+        {"code": code},
+        update,
+        return_document=ReturnDocument.AFTER,
+    )

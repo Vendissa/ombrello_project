@@ -8,11 +8,11 @@ UmbrellaCondition = Literal["good", "worn", "needs_repair", "broken"]
 class UmbrellaBase(BaseModel):
     # code is optional on input (it will be auto-generated if omitted)
     code: Optional[str] = Field(default=None, min_length=3, max_length=64)
-    vendor_id: str                                            # REQUIRED (must be a vendor)
-    shop_name: Optional[str] = None                              # will be forced to None on create/bulk
+    vendor_id: str                                            
+    shop_name: Optional[str] = None                             
     status: UmbrellaStatus = "available"
     condition: UmbrellaCondition = "good"
-    rented_date: Optional[datetime] = None                    # null unless status='rented'
+    rented_date: Optional[datetime] = None                    
 
 class CreateUmbrella(UmbrellaBase):
     pass
@@ -29,8 +29,13 @@ class UmbrellaOut(UmbrellaBase):
     created_at: datetime
     updated_at: datetime
     qr_value: str
+    condition: Optional[str]
+    updated_at: Optional[datetime]
 
 class BulkAddUmbrellas(BaseModel):
     vendor_id: str
     shop_name: Optional[str] = None
     count: int = Field(..., ge=1, le=1000)
+
+class ReportBrokenUmbrella(BaseModel):
+    code: str

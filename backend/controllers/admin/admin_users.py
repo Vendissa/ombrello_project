@@ -9,7 +9,7 @@ import io, csv
 
 router = APIRouter(prefix="/admin/users", tags=["admin-users"])
 
-ALLOWED_STATUSES = {"active", "suspended"}  # add "restricted"/"pending" later if you decide
+ALLOWED_STATUSES = {"active", "suspended"} 
 
 def _to_out(doc: Dict[str, Any]) -> Dict[str, Any]:
     """Normalize user document for FE."""
@@ -27,12 +27,12 @@ async def list_users(
     db: AsyncIOMotorDatabase = Depends(get_db),
     page: int = Query(1, ge=1),
     page_size: int = Query(10, le=100),
-    q: Optional[str] = None,                 # search name/email/telephone
-    status: Optional[str] = None,            # active/suspended
+    q: Optional[str] = None,              
+    status: Optional[str] = None,            
     sort: str = "-created_at",
 ):
     query: Dict[str, Any] = {
-        "role": {"$ne": "admin"}             # <-- exclude admins
+        "role": {"$ne": "admin"}             
     }
 
     if q:
